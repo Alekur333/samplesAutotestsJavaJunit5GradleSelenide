@@ -1,0 +1,145 @@
+plugins {
+    id 'java-library'
+    id 'io.qameta.allure' version '2.10.0'
+    id "org.sonarqube" version "3.5.0.2730"
+    id "io.freefair.lombok" version "8.4"
+    id("org.gradle.test-retry") version "1.5.10"
+}
+
+repositories {
+    mavenCentral()
+//    maven { url "https://jitpack.io" }
+}
+
+compileJava {
+    options.encoding = 'UTF-8'
+}
+compileTestJava {
+    options.encoding = 'UTF-8'
+}
+
+def allureVersion = "2.25.0",
+    selenideVersion = "5.25.1",
+    junitVersion = "5.10.2",
+    restAssuredVersion = "5.5.0",
+    slf4jVersion = "2.0.7",
+    jacksonVersion = "2.16.1",
+    aspectJVersion = "1.9.20.1",
+    bonigarciaWDManagerVersion = "5.8.0",
+    poiVersion = "5.2.5",
+    log4jVersion = "2.22.1"
+
+
+// Define configuration for AspectJ agent
+configurations {
+    agent {
+        canBeResolved = true
+        canBeConsumed = true
+    }
+}
+
+allure {
+    report {
+        version.set(allureVersion)
+    }
+    adapter {
+        aspectjWeaver.set true
+        frameworks {
+            junit5 {
+                adapterVersion.set(allureVersion)
+            }
+        }
+    }
+}
+
+dependencies {
+    agent "org.aspectj:aspectjweaver:$aspectJVersion"
+    implementation(
+            "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion",
+    )
+    testImplementation(
+            "com.codeborne:selenide:$selenideVersion",
+            "org.junit.jupiter:junit-jupiter-api:$junitVersion",
+            "org.assertj:assertj-core:3.24.2",
+            "org.aeonbits.owner:owner:1.0.12",
+            "io.qameta.allure:allure-selenide:$allureVersion",
+            "io.qameta.allure:allure-rest-assured:$allureVersion",
+            "io.rest-assured:rest-assured:$restAssuredVersion",
+            "io.rest-assured:json-schema-validator:$restAssuredVersion",
+            "org.slf4j:slf4j-api:$slf4jVersion",
+            "net.datafaker:datafaker:2.2.2",
+            "org.junit.vintage:junit-vintage-engine:5.9.1",
+            "io.github.artsok:rerunner-jupiter:2.1.6",
+            "io.github.bonigarcia:webdrivermanager:$bonigarciaWDManagerVersion",
+            "org.apache.poi:poi:$poiVersion",
+            "org.apache.poi:poi-ooxml:$poiVersion",
+            "org.apache.logging.log4j:log4j-core:$log4jVersion",
+            "mysql:mysql-connector-java:8.0.33",
+            "org.postgresql:postgresql:42.7.3",
+            "org.wiremock:wiremock-standalone:3.8.0",
+    )
+
+    testRuntimeOnly(
+            "org.junit.jupiter:junit-jupiter-engine:$junitVersion",
+            "org.slf4j:slf4j-simple:$slf4jVersion"
+    )
+}
+
+sonar {
+    properties {
+        property "sonar.projectKey", "akurochkin_asu-pi-test_AYj7_D5VUWmSTfDIpQJR"
+        property "sonar.qualitygate.wait", true
+    }
+}
+
+test {
+    useJUnitPlatform()
+//    maxParallelForks = Runtime.runtime.availableProcessors()
+//    maxParallelForks = 2
+    maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
+    systemProperties(System.getProperties())
+    testLogging {
+        lifecycle {
+            events "started", "skipped", "failed", "standard_error", "standard_out"
+            exceptionFormat "short"
+        }
+    }
+    jvmArgs = ["-javaagent:${configurations.agent.singleFile}"]
+
+    // автоматически перезапустит упавшие тесты плагин org.gradle.test-retry
+    retry {
+        maxRetries = 0
+        failOnPassedAfterRetry = false
+    }
+
+}
+
+task requestAuto(type: Test) {
+    useJUnitPlatform {
+        includeTags "requestAuto"
+        excludeTags "skip"
+    }
+}
+
+task requestAutoSpo(type: Test) {
+    useJUnitPlatform {
+        includeTags "requestAutoSpo"
+        excludeTags "skip"
+    }
+}
+
+    task inegration(type: Test) {
+        useJUnitPlatform {
+            includeTags "inegration"
+            excludeTags "skip"
+        }
+    }
+
+    task asuKpi(type: Test) {
+        useJUnitPlatform {
+            includeTags "asuKpi"
+            excludeTags "skip"
+        }
+    }
+
+}
