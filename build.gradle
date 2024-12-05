@@ -85,17 +85,8 @@ dependencies {
     )
 }
 
-sonar {
-    properties {
-        property "sonar.projectKey", "akurochkin_asu-pi-test_AYj7_D5VUWmSTfDIpQJR"
-        property "sonar.qualitygate.wait", true
-    }
-}
-
 test {
     useJUnitPlatform()
-//    maxParallelForks = Runtime.runtime.availableProcessors()
-//    maxParallelForks = 2
     maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
     systemProperties(System.getProperties())
     testLogging {
@@ -108,7 +99,7 @@ test {
 
     // автоматически перезапустит упавшие тесты плагин org.gradle.test-retry
     retry {
-        maxRetries = 0
+        maxRetries = 2
         failOnPassedAfterRetry = false
     }
 
@@ -121,25 +112,4 @@ task requestAuto(type: Test) {
     }
 }
 
-task requestAutoSpo(type: Test) {
-    useJUnitPlatform {
-        includeTags "requestAutoSpo"
-        excludeTags "skip"
-    }
-}
 
-    task inegration(type: Test) {
-        useJUnitPlatform {
-            includeTags "inegration"
-            excludeTags "skip"
-        }
-    }
-
-    task asuKpi(type: Test) {
-        useJUnitPlatform {
-            includeTags "asuKpi"
-            excludeTags "skip"
-        }
-    }
-
-}

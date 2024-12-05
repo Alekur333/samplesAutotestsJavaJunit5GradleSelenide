@@ -1,4 +1,4 @@
-package aleks.kur.models.par;
+package aleks.kur.models.user;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
@@ -10,10 +10,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ApproverParRobot {
-
-    private Integer id; // id Утверждающее лицо
+public class User {
+    private String login;
+    private String password;
+    private String mainRole;
     private String shortName;
-    private String departmentName;
-    private String position;
+
 }
